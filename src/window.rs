@@ -38,7 +38,7 @@ impl GameWindow {
             WIDTH = new_size.0 as u32;
             HEIGHT = new_size.1 as u32;
         }
-        self.pixels.resize_surface(new_size.0, new_size.1).unwrap();
+        self.pixels.resize_buffer(new_size.0, new_size.1).unwrap();
         self.size = new_size;
     }
 }
