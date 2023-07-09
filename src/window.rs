@@ -1,7 +1,11 @@
-use pixels::{Pixels, SurfaceTexture, Error};
-use winit::{window::{Window, WindowBuilder}, event_loop::EventLoop, dpi::LogicalSize};
+use pixels::{Error, Pixels, SurfaceTexture};
+use winit::{
+    dpi::LogicalSize,
+    event_loop::EventLoop,
+    window::{Window, WindowBuilder},
+};
 
-use crate::{WIDTH, HEIGHT};
+use crate::{HEIGHT, WIDTH};
 
 pub struct GameWindow {
     pub window: Window,
@@ -13,7 +17,10 @@ impl GameWindow {
     pub fn new(title: &str, event_loop: &EventLoop<()>) -> Result<Self, Error> {
         let width;
         let height;
-        unsafe { width = WIDTH as u32; height = HEIGHT as u32; }
+        unsafe {
+            width = WIDTH;
+            height = HEIGHT;
+        }
 
         let size = LogicalSize::new(width, height);
         let window = WindowBuilder::new()
@@ -35,8 +42,8 @@ impl GameWindow {
 
     pub fn resize(&mut self, new_size: (u32, u32)) {
         unsafe {
-            WIDTH = new_size.0 as u32;
-            HEIGHT = new_size.1 as u32;
+            WIDTH = new_size.0;
+            HEIGHT = new_size.1;
         }
         self.pixels.resize_buffer(new_size.0, new_size.1).unwrap();
         self.size = new_size;
