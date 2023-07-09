@@ -1,6 +1,8 @@
 # raycaster
 A simple raycaster built with Rust with the help of the amazing guide, [Raycasting](https://lodev.org/cgtutor/raycasting2.html).
 
+![Demo picture](https://github.com/manorajesh/raycaster/blob/master/images/demo.png)
+
 ## Installation
 ```
 git clone https://github.com/manorajesh/raycaster.git && cd raycaster
