@@ -1,18 +1,17 @@
-use crate::{WIDTH, HEIGHT, verline};
+use crate::{verline, HEIGHT, WIDTH};
 
-pub const mapHeight: usize = 24;
-pub const mapWidth: usize = 24;
+pub const MAPHEIGHT: usize = 24;
+pub const MAPWIDTH: usize = 24;
 
 pub struct RayCaster {
     player: Player,
-    map: [[usize; mapWidth]; mapHeight],
+    map: [[usize; MAPWIDTH]; MAPHEIGHT],
     plane: Vector<f64>,
 }
 
 struct Player {
     pub pos: Vector<f64>,
     pub dir: Vector<f64>,
-    pub fov: f64,
 }
 
 struct Vector<T> {
@@ -39,7 +38,6 @@ impl RayCaster {
             player: Player {
                 pos: Vector { x: 22.0, y: 12.0 },
                 dir: Vector { x: -1.0, y: 0.0 },
-                fov: 60.0,
             },
 
             map: [
@@ -69,14 +67,17 @@ impl RayCaster {
                 [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
               ],
 
-              plane: Vector { x: 0.0, y: 0.66 },
+            plane: Vector { x: 0.0, y: 0.66 },
         }
     }
 
     pub fn draw(&self, frame: &mut [u8]) -> Result<(), String> {
         let width;
         let height;
-        unsafe { width = WIDTH; height = HEIGHT; }
+        unsafe {
+            width = WIDTH;
+            height = HEIGHT;
+        }
 
         for x in 0..width {
             let cameraX = 2.0 * x as f64 / width as f64 - 1.0;
@@ -90,10 +91,7 @@ impl RayCaster {
                 y: self.player.pos.y as i32,
             };
 
-            let mut sideDist = Vector {
-                x: 0.,
-                y: 0.,
-            };
+            let mut sideDist = Vector { x: 0., y: 0. };
 
             let deltaDist = Vector {
                 x: f64::abs(1.0 / rayDir.x),
@@ -101,10 +99,7 @@ impl RayCaster {
             };
 
             let perpWallDist: f64;
-            let mut step = Vector {
-                x: 0,
-                y: 0,
-            };
+            let mut step = Vector { x: 0, y: 0 };
 
             let mut hit = false;
             let mut side = 0;
@@ -136,20 +131,21 @@ impl RayCaster {
                     mapPos.y += step.y;
                     side = 1;
                 }
-            
+
                 if self.map[mapPos.x as usize][mapPos.y as usize] > 0 {
                     hit = true;
                 }
-            }            
+            }
             // println!("Finished DDA");
 
             // Correct fisheye effect
             if side == 0 {
-                perpWallDist = (mapPos.x as f64 - self.player.pos.x + (1.0 - step.x as f64) / 2.0) / rayDir.x;
+                perpWallDist =
+                    (mapPos.x as f64 - self.player.pos.x + (1.0 - step.x as f64) / 2.0) / rayDir.x;
             } else {
-                perpWallDist = (mapPos.y as f64 - self.player.pos.y + (1.0 - step.y as f64) / 2.0) / rayDir.y;
+                perpWallDist =
+                    (mapPos.y as f64 - self.player.pos.y + (1.0 - step.y as f64) / 2.0) / rayDir.y;
             }
-            
 
             let lineHeight = (height as f64 / perpWallDist) as i32;
 
@@ -175,7 +171,14 @@ impl RayCaster {
                 rgba.div_assign(2);
             }
 
-            verline(frame, x as usize, drawStart as usize, drawEnd as usize, &rgba, 0.);
+            verline(
+                frame,
+                x as usize,
+                drawStart as usize,
+                drawEnd as usize,
+                &rgba,
+                0.,
+            );
             // return Ok(());
         }
 
@@ -187,42 +190,60 @@ impl RayCaster {
         let rotSpeed = 0.1;
         match dir {
             Direction::Up => {
-                if self.map[(self.player.pos.x + self.player.dir.x * moveSpeed) as usize][(self.player.pos.y) as usize] == 0 {
+                if self.map[(self.player.pos.x + self.player.dir.x * moveSpeed) as usize]
+                    [(self.player.pos.y) as usize]
+                    == 0
+                {
                     self.player.pos.x += self.player.dir.x * moveSpeed;
                 }
 
-                if self.map[(self.player.pos.x) as usize][(self.player.pos.y + self.player.dir.y * moveSpeed) as usize] == 0 {
+                if self.map[(self.player.pos.x) as usize]
+                    [(self.player.pos.y + self.player.dir.y * moveSpeed) as usize]
+                    == 0
+                {
                     self.player.pos.y += self.player.dir.y * moveSpeed;
                 }
             }
 
             Direction::Down => {
-                if self.map[(self.player.pos.x - self.player.dir.x * moveSpeed) as usize][(self.player.pos.y) as usize] == 0 {
+                if self.map[(self.player.pos.x - self.player.dir.x * moveSpeed) as usize]
+                    [(self.player.pos.y) as usize]
+                    == 0
+                {
                     self.player.pos.x -= self.player.dir.x * moveSpeed;
                 }
 
-                if self.map[(self.player.pos.x) as usize][(self.player.pos.y - self.player.dir.y * moveSpeed) as usize] == 0 {
+                if self.map[(self.player.pos.x) as usize]
+                    [(self.player.pos.y - self.player.dir.y * moveSpeed) as usize]
+                    == 0
+                {
                     self.player.pos.y -= self.player.dir.y * moveSpeed;
                 }
             }
 
             Direction::Right => {
-                let oldDirX = self.player.dir.x.clone();
-                self.player.dir.x = self.player.dir.x * f64::cos(-rotSpeed) - self.player.dir.y * f64::sin(-rotSpeed);
-                self.player.dir.y = oldDirX * f64::sin(-rotSpeed) + self.player.dir.y * f64::cos(-rotSpeed);
+                let oldDirX = self.player.dir.x;
+                self.player.dir.x = self.player.dir.x * f64::cos(-rotSpeed)
+                    - self.player.dir.y * f64::sin(-rotSpeed);
+                self.player.dir.y =
+                    oldDirX * f64::sin(-rotSpeed) + self.player.dir.y * f64::cos(-rotSpeed);
 
-                let oldPlaneX = self.plane.x.clone();
-                self.plane.x = self.plane.x * f64::cos(-rotSpeed) - self.plane.y * f64::sin(-rotSpeed);
+                let oldPlaneX = self.plane.x;
+                self.plane.x =
+                    self.plane.x * f64::cos(-rotSpeed) - self.plane.y * f64::sin(-rotSpeed);
                 self.plane.y = oldPlaneX * f64::sin(-rotSpeed) + self.plane.y * f64::cos(-rotSpeed);
             }
 
             Direction::Left => {
-                let oldDirX = self.player.dir.x.clone();
-                self.player.dir.x = self.player.dir.x * f64::cos(rotSpeed) - self.player.dir.y * f64::sin(rotSpeed);
-                self.player.dir.y = oldDirX * f64::sin(rotSpeed) + self.player.dir.y * f64::cos(rotSpeed);
+                let oldDirX = self.player.dir.x;
+                self.player.dir.x =
+                    self.player.dir.x * f64::cos(rotSpeed) - self.player.dir.y * f64::sin(rotSpeed);
+                self.player.dir.y =
+                    oldDirX * f64::sin(rotSpeed) + self.player.dir.y * f64::cos(rotSpeed);
 
-                let oldPlaneX = self.plane.x.clone();
-                self.plane.x = self.plane.x * f64::cos(rotSpeed) - self.plane.y * f64::sin(rotSpeed);
+                let oldPlaneX = self.plane.x;
+                self.plane.x =
+                    self.plane.x * f64::cos(rotSpeed) - self.plane.y * f64::sin(rotSpeed);
                 self.plane.y = oldPlaneX * f64::sin(rotSpeed) + self.plane.y * f64::cos(rotSpeed);
             }
         }

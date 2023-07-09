@@ -1,13 +1,16 @@
 use pixels::Error;
-use winit::{event_loop::EventLoop, event::{Event, WindowEvent, VirtualKeyCode, ElementState}};
+use winit::{
+    event::{ElementState, Event, VirtualKeyCode, WindowEvent},
+    event_loop::EventLoop,
+};
 
-mod window;
 mod raycaster;
+mod window;
 
 pub static mut HEIGHT: u32 = 800;
 pub static mut WIDTH: u32 = 1200;
 
-fn main() -> Result<(), Error>{
+fn main() -> Result<(), Error> {
     let event_loop = EventLoop::new();
     let mut gw = window::GameWindow::new("raycaster", &event_loop)?;
     let mut raycaster = raycaster::RayCaster::new();
@@ -27,17 +30,26 @@ fn main() -> Result<(), Error>{
                 gw.pixels.render().unwrap();
             }
 
-            Event::WindowEvent { event: WindowEvent::CloseRequested, .. } => {
+            Event::WindowEvent {
+                event: WindowEvent::CloseRequested,
+                ..
+            } => {
                 // println!("Window closed");
                 *control_flow = winit::event_loop::ControlFlow::Exit;
             }
 
-            Event::WindowEvent { event: WindowEvent::Resized(size), .. } => {
+            Event::WindowEvent {
+                event: WindowEvent::Resized(size),
+                ..
+            } => {
                 // println!("Window resized to {:?}", size);
                 gw.resize((size.width, size.height));
             }
 
-            Event::WindowEvent { event: WindowEvent::KeyboardInput { input, .. }, .. } => {
+            Event::WindowEvent {
+                event: WindowEvent::KeyboardInput { input, .. },
+                ..
+            } => {
                 // println!("Keyboard input detected");
                 match input.virtual_keycode {
                     Some(VirtualKeyCode::Up) if input.state == ElementState::Pressed => {
@@ -65,7 +77,9 @@ fn main() -> Result<(), Error>{
 
 fn verline(frame: &mut [u8], x: usize, y1: usize, y2: usize, rgba: &[u8; 4], thickness: f64) {
     let width;
-    unsafe { width = WIDTH as usize; }
+    unsafe {
+        width = WIDTH as usize;
+    }
 
     let half_thickness = (thickness / 2.0).ceil() as i64;
 
