@@ -1,7 +1,8 @@
 use pixels::Error;
-use winit::{event_loop::EventLoop, event::{Event, WindowEvent}};
+use winit::{event_loop::EventLoop, event::{Event, WindowEvent, VirtualKeyCode, ElementState}};
 
 mod window;
+mod raycaster;
 
 pub static mut HEIGHT: u32 = 400;
 pub static mut WIDTH: u32 = 640;
@@ -9,12 +10,14 @@ pub static mut WIDTH: u32 = 640;
 fn main() -> Result<(), Error>{
     let event_loop = EventLoop::new();
     let mut gw = window::GameWindow::new("snake", &event_loop)?;
+    let mut raycaster = raycaster::RayCaster::new();
 
     event_loop.run(move |event, _, control_flow| {
         match event {
             Event::RedrawRequested(_) => {
                 println!("Redraw requested");
-                verline(gw.pixels.frame_mut(), 0, 2, 203, &[255, 0, 0, 255], 10.);
+                // verline(gw.pixels.frame_mut(), 0, 2, 203, &[255, 0, 0, 255], 10.);
+                raycaster.draw(gw.pixels.frame_mut()).unwrap();
                 gw.pixels.render().unwrap();
             }
 
@@ -28,24 +31,24 @@ fn main() -> Result<(), Error>{
                 gw.resize((size.width, size.height));
             }
 
-            // Event::WindowEvent { event: WindowEvent::KeyboardInput { input, .. }, .. } => {
-            //     println!("Keyboard input detected");
-            //     match input.virtual_keycode {
-            //         Some(VirtualKeyCode::Up) if input.state == ElementState::Pressed => {
-            //             snake.change_direction(snake::Direction::Up);
-            //         }
-            //         Some(VirtualKeyCode::Down) if input.state == ElementState::Pressed => {
-            //             snake.change_direction(snake::Direction::Down);
-            //         }
-            //         Some(VirtualKeyCode::Left) if input.state == ElementState::Pressed => {
-            //             snake.change_direction(snake::Direction::Left);
-            //         }
-            //         Some(VirtualKeyCode::Right) if input.state == ElementState::Pressed => {
-            //             snake.change_direction(snake::Direction::Right);
-            //         }
-            //         _ => {}
-            //     }
-            // }
+            Event::WindowEvent { event: WindowEvent::KeyboardInput { input, .. }, .. } => {
+                println!("Keyboard input detected");
+                match input.virtual_keycode {
+                    Some(VirtualKeyCode::Up) if input.state == ElementState::Pressed => {
+                        raycaster.change_direction(raycaster::Direction::Up)
+                    }
+                    Some(VirtualKeyCode::Down) if input.state == ElementState::Pressed => {
+                        raycaster.change_direction(raycaster::Direction::Down)
+                    }
+                    Some(VirtualKeyCode::Left) if input.state == ElementState::Pressed => {
+                        raycaster.change_direction(raycaster::Direction::Left)
+                    }
+                    Some(VirtualKeyCode::Right) if input.state == ElementState::Pressed => {
+                        raycaster.change_direction(raycaster::Direction::Right)
+                    }
+                    _ => {}
+                }
+            }
 
             _ => {}
         }
